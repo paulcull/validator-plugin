@@ -1,0 +1,15 @@
+rules:
+  - field: name
+    type: string
+    required: true
+    message: "Name is required"
+    pattern: "^[a-zA-Z\\s]+$"
+    description: "Name must contain only letters and spaces"
+
+  - field: age
+    type: integer
+    required: true
+    message: "Age is required"
+    min: 0
+    max: 120
+    description: "Age must be between 0 and 120" 

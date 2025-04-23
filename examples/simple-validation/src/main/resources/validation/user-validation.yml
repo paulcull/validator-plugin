@@ -1,0 +1,42 @@
+# User validation rules
+rules:
+  - name: username-format
+    description: "Username must contain only alphanumeric characters and underscores"
+    type: "pattern"
+    field: "username"
+    pattern: "^[a-zA-Z0-9_]+$"
+    message: "Username must contain only alphanumeric characters and underscores"
+    
+  - name: password-complexity
+    description: "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    type: "pattern"
+    field: "password"
+    pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$"
+    message: "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    
+  - name: email-domain
+    description: "Email must be from a valid domain"
+    type: "pattern"
+    field: "email"
+    pattern: "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+    message: "Email must be from a valid domain"
+    
+  - name: address-state
+    description: "State must be a valid US state code"
+    type: "enum"
+    values: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"]
+    field: "address.state"
+    message: "State must be a valid US state code"
+    
+  - name: zip-code-format
+    description: "Zip code must be in valid US format (5 digits or 5+4)"
+    type: "regex"
+    pattern: "^\\d{5}(-\\d{4})?$"
+    field: "address.zipCode"
+    message: "Zip code must be in valid US format (5 digits or 5+4)"
+    
+  - name: address-required
+    description: "Address is required"
+    type: "notNull"
+    field: "address"
+    message: "Address is required" 

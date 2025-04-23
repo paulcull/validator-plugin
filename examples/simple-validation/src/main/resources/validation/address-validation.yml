@@ -1,0 +1,26 @@
+rules:
+  - name: street-required
+    description: "Street address is required"
+    type: "notBlank"
+    field: "street"
+    message: "Street address is required"
+    
+  - name: city-required
+    description: "City is required"
+    type: "notBlank"
+    field: "city"
+    message: "City is required"
+    
+  - name: state-format
+    description: "State must be a valid US state code"
+    type: "pattern"
+    field: "state"
+    pattern: "^[A-Z]{2}$"
+    message: "State must be a valid US state code"
+    
+  - name: zip-code-format
+    description: "Zip code must be in valid US format"
+    type: "pattern"
+    field: "zipCode"
+    pattern: "^\\d{5}(-\\d{4})?$"
+    message: "Zip code must be in valid US format" 

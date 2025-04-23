@@ -1,0 +1,21 @@
+rules:
+  - name: name-required
+    description: "Name must not be blank"
+    type: "notBlank"
+    field: "name"
+    message: "name: must not be blank"
+    
+  - name: name-length
+    description: "Name must be between 2 and 50 characters"
+    type: "size"
+    field: "name"
+    min: 2
+    max: 50
+    message: "Name must be between 2 and 50 characters"
+    
+  - name: age-minimum
+    description: "Age must be at least 0"
+    type: "min"
+    field: "age"
+    value: 0
+    message: "age: must be greater than or equal to 0" 
