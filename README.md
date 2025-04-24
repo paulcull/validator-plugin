@@ -1,6 +1,27 @@
 # Data Validation Plugin
 
-A Spring Boot plugin for declarative data validation using YAML configuration files.
+A Spring Boot plugin for declarative data validation using YAML configuration files. This plugin enforces strict separation of concerns between validation logic and business logic.
+
+## Core Principles
+
+1. **Separation of Concerns**
+   - All validation logic resides in the plugin
+   - Consumer applications only define rules and use annotations
+   - No validation logic leaks into consuming applications
+   - Clear boundaries between plugin and consumer responsibilities
+
+2. **Plugin Responsibilities**
+   - Validation processing engine
+   - Rule loading and parsing
+   - Validation annotations
+   - Auto-configuration
+   - Error message handling
+
+3. **Consumer Responsibilities**
+   - Define YAML validation rules
+   - Apply `@ValidatedBy` annotations to models
+   - Configure validation properties
+   - Handle validation results
 
 ## Features
 
@@ -9,6 +30,12 @@ A Spring Boot plugin for declarative data validation using YAML configuration fi
 - Integration with Spring Boot's auto-configuration
 - Support for nested object validation
 - Easy to extend with custom validation types
+
+## Documentation
+
+- [Validation Rules Guide](docs/ValidationRules.md): Detailed guide on writing validation rules
+- [Custom Validators Guide](docs/CustomValidators.md): How to create and use custom validators
+- [Developer Guide](docs/DeveloperGuide.md): Plugin development and extension guide
 
 ## Usage
 
@@ -97,11 +124,20 @@ The plugin supports the following validation types:
 - `min`: Validates numeric values against a minimum
 - `max`: Validates numeric values against a maximum
 - `enum`: Validates against a list of allowed values
+- `custom`: Supports custom validation logic (see [Custom Validators Guide](docs/CustomValidators.md))
 
-## Example
+## Examples
 
 See the `examples/simple-validation` directory for a complete example of using the plugin.
 
+## Integration Best Practices
+
+1. Keep all validation logic within the plugin
+2. Use YAML files for rule definitions only
+3. Avoid implementing validation logic in consumer applications
+4. Use custom validators when built-in validators are insufficient
+5. Follow the separation of concerns principle strictly
+
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. 
+Contributions are welcome! Please read our [Developer Guide](docs/DeveloperGuide.md) before submitting a Pull Request. 
