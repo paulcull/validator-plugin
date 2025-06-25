@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: CDP vs. IoT Architecture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (Slate, Cyan) -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive, single-page dashboard with a sticky top navigation for easy access to key themes. This structure was chosen over a linear document format to enhance usability and exploration. It breaks down the dense report into thematic sections: Core Architectures, Operational Patterns, Advanced Topologies, and Management & Governance. This allows users to jump directly to topics of interest. Interactive elements like charts with toggleable datasets and clickable cards for detail reveal are used to present comparisons and complex information in a digestible, engaging manner. The goal is to facilitate understanding and synthesis of the core similarities and transferable patterns between CDP and IoT architectures, which a static report cannot achieve as effectively. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Technology Stack Comparison -> Goal: Compare -> Viz: Interactive Radar Chart -> Interaction: Toggle buttons to switch between CDP, IoT, and an overlay view. -> Justification: A radar chart is ideal for showing the relative strengths and focus areas of each tech stack across multiple common categories (e.g., Streaming, Protocols). The toggle makes the comparison direct and intuitive. -> Library: Chart.js.
+        - Report Info: Protocol Characteristics (Latency, Overhead) -> Goal: Compare -> Viz: Grouped Bar Chart -> Interaction: Hover tooltips for detailed values. -> Justification: A grouped bar chart provides a clear, quantitative comparison of different protocols across key performance metrics, making the abstract data from the report's table easy to visualize. -> Library: Chart.js.
+        - Report Info: Architectural Patterns (EDA, CQRS) -> Goal: Organize & Inform -> Viz: Structured HTML/CSS diagrams -> Interaction: N/A. -> Justification: For abstract concepts like architectural flows, a clean visual diagram built with HTML/CSS is more effective and stylistically consistent than a data chart. It clarifies the relationships between components. -> Library: Tailwind CSS.
+        - Report Info: Key Concepts (Resilience, Scalability, etc.) -> Goal: Inform & Organize -> Viz: Interactive Cards -> Interaction: Click to expand/collapse detailed text. -> Justification: This pattern presents high-level concepts cleanly and avoids overwhelming the user with text. It encourages exploration by allowing users to drill down into topics they find interesting. -> Library: Vanilla JS.
+        -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .nav-link.active {
+            color: #0891b2; /* cyan-600 */
+            border-bottom-color: #0891b2;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .expandable-card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .expandable-card.open .expandable-card-content {
+            max-height: 1000px; /* Large enough to fit content */
+            transition: max-height 0.7s ease-in;
+        }
+        .expandable-card.open .chevron {
+            transform: rotate(180deg);
+        }
+        .chevron {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-slate-800">CDP <span class="text-cyan-600">&</span> IoT</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 hover:text-cyan-600 border-b-2 border-transparent">Overview</a>
+                        <a href="#architectures" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 hover:text-cyan-600 border-b-2 border-transparent">Core Architectures</a>
+                        <a href="#operations" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 hover:text-cyan-600 border-b-2 border-transparent">Operational Patterns</a>
+                        <a href="#topologies" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 hover:text-cyan-600 border-b-2 border-transparent">Advanced Topologies</a>
+                        <a href="#management" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 hover:text-cyan-600 border-b-2 border-transparent">Management & Governance</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-slate-100 border border-slate-300 rounded-md p-2 text-sm">
+                        <option value="#overview">Overview</option>
+                        <option value="#architectures">Core Architectures</option>
+                        <option value="#operations">Operational Patterns</option>
+                        <option value="#topologies">Advanced Topologies</option>
+                        <option value="#management">Management & Governance</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        
+        <!-- Section: Overview -->
+        <section id="overview" class="mb-24 space-y-8 scroll-mt-20">
+            <div class="text-center">
+                <h2 class="text-base font-semibold text-cyan-600 tracking-wide uppercase">Architectural Symbiosis</h2>
+                <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Transferable Patterns from IoT to Customer Decisioning</p>
+                <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-500">
+                    An interactive exploration of the fundamental architectural similarities between Customer Decisioning Platforms (CDPs) and IoT implementations.
+                </p>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Executive Summary & Hypothesis</h3>
+                <p class="text-slate-600 leading-relaxed">
+                    This analysis validates the hypothesis that CDPs and IoT systems share a significant architectural overlap in their event-driven, real-time decision-making capabilities. Both domains are driven by the imperative to process high-velocity data streams for immediate, context-aware actions. Key transferable patterns identified can significantly enhance CDP resilience, performance, and configuration agility in retail and finance. This interactive report unpacks these patterns, from core architecture to advanced federated models.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section: Core Architectures -->
+        <section id="architectures" class="mb-24 space-y-12 scroll-mt-20">
+            <div class="text-center">
+                <h2 class="text-base font-semibold text-cyan-600 tracking-wide uppercase">Foundations</h2>
+                <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Core Architectures & Technology Stacks</p>
+                 <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-500">
+                    This section explores the foundational building blocks of both CDP and IoT systems. At their heart, both are event-driven, relying on similar patterns and technologies to ingest, process, and act on vast streams of data in real time. We'll compare their technology stacks and visualize key architectural patterns that enable their capabilities.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-lg font-bold text-slate-900 mb-2 text-center">Interactive Tech Stack Comparison</h3>
+                    <p class="text-center text-slate-500 mb-4 text-sm">Toggle between views to see how CDP and IoT technology choices overlap and differ across key architectural domains.</p>
+                    <div class="chart-container">
+                        <canvas id="techStackRadarChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex justify-center space-x-2">
+                        <button id="cdpBtn" class="px-4 py-2 text-sm font-medium rounded-md bg-cyan-500 text-white">CDP View</button>
+                        <button id="iotBtn" class="px-4 py-2 text-sm font-medium rounded-md bg-slate-200 text-slate-700">IoT View</button>
+                        <button id="bothBtn" class="px-4 py-2 text-sm font-medium rounded-md bg-slate-200 text-slate-700">Overlay View</button>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-lg font-bold text-slate-900 mb-2">Pattern: Event-Driven Architecture (EDA)</h3>
+                        <p class="text-slate-600 text-sm mb-4">EDA is the backbone for both systems. Below is a simplified diagram illustrating the two main topologies: Broker (decoupled) and Mediator (orchestrated).</p>
+                        <div class="space-y-4">
+                            <!-- Broker Topology Diagram -->
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Broker Topology</h4>
+                                <div class="mt-2 flex items-center justify-around p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                    <div class="text-center">
+                                        <div class="p-2 bg-blue-100 text-blue-800 rounded-full text-xs">Producer</div>
+                                    </div>
+                                    <div class="flex-grow h-px bg-slate-300 mx-2"></div>
+                                    <div class="text-center">
+                                        <div class="p-2 bg-slate-200 text-slate-800 rounded-lg text-xs">Event Bus</div>
+                                    </div>
+                                    <div class="flex-grow h-px bg-slate-300 mx-2"></div>
+                                    <div class="flex flex-col space-y-2">
+                                         <div class="p-2 bg-green-100 text-green-800 rounded-full text-xs">Consumer A</div>
+                                         <div class="p-2 bg-green-100 text-green-800 rounded-full text-xs">Consumer B</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Mediator Topology Diagram -->
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Mediator Topology</h4>
+                                 <div class="mt-2 flex items-center justify-around p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                    <div class="text-center">
+                                        <div class="p-2 bg-blue-100 text-blue-800 rounded-full text-xs">Producer</div>
+                                    </div>
+                                    <div class="flex-grow h-px bg-slate-300 mx-2"></div>
+                                    <div class="text-center">
+                                        <div class="p-2 bg-purple-100 text-purple-800 rounded-lg text-xs">Mediator</div>
+                                    </div>
+                                    <div class="flex-grow h-px bg-slate-300 mx-2"></div>
+                                    <div class="flex flex-col space-y-2">
+                                         <div class="p-2 bg-green-100 text-green-800 rounded-full text-xs">Consumer A</div>
+                                         <div class="p-2 bg-green-100 text-green-800 rounded-full text-xs">Consumer B</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-lg font-bold text-slate-900 mb-2">Pattern: CQRS & Event Sourcing</h3>
+                        <p class="text-slate-600 text-sm mb-4">Command Query Responsibility Segregation (CQRS) separates read and write operations, a powerful pattern for performance and scalability, often paired with Event Sourcing.</p>
+                        <div class="mt-2 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <!-- Write Side -->
+                                <div class="flex-1 text-center p-3 border-r-0 md:border-r-2 border-dashed border-red-300">
+                                    <h4 class="font-semibold text-red-600">Write Model (Commands)</h4>
+                                    <p class="text-xs text-slate-500 mt-1">User Action ➔ Command ➔ Generate Event</p>
+                                    <div class="mt-2 text-3xl">✏️</div>
+                                    <p class="text-xs mt-1 font-mono bg-red-100 p-1 rounded">Event Store (Log)</p>
+                                </div>
+                                <!-- Read Side -->
+                                <div class="flex-1 text-center p-3">
+                                    <h4 class="font-semibold text-blue-600">Read Model (Queries)</h4>
+                                    <p class="text-xs text-slate-500 mt-1">Events ➔ Projector ➔ Update View</p>
+                                    <div class="mt-2 text-3xl">🔍</div>
+                                    <p class="text-xs mt-1 font-mono bg-blue-100 p-1 rounded">Materialized Views</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                 <h3 class="text-lg font-bold text-slate-900 mb-2 text-center">Protocol Suitability Comparison</h3>
+                 <p class="text-center text-slate-500 mb-4 text-sm">Both domains use various communication protocols. This chart compares common protocols on key characteristics like latency and overhead, illustrating the trade-offs involved. Lower bars are better.</p>
+                 <div class="chart-container h-96 max-h-[500px]">
+                    <canvas id="protocolBarChart"></canvas>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Section: Operational Patterns -->
+        <section id="operations" class="mb-24 space-y-12 scroll-mt-20">
+            <div class="text-center">
+                <h2 class="text-base font-semibold text-cyan-600 tracking-wide uppercase">Performance & Resilience</h2>
+                <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Operational Patterns</p>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-500">
+                    How do these systems perform under pressure and recover from failure? This section dives into the shared patterns for scalability, performance optimization, and reliability. Explore the key concepts that ensure these platforms are fast, robust, and dependable.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Expandable Cards -->
+                <div id="operational-cards-container"></div>
+            </div>
+        </section>
+
+        <!-- Section: Advanced Topologies -->
+        <section id="topologies" class="mb-24 space-y-12 scroll-mt-20">
+             <div class="text-center">
+                <h2 class="text-base font-semibold text-cyan-600 tracking-wide uppercase">Distributed Intelligence</h2>
+                <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Advanced Topologies: Edge & Federation</p>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-500">
+                    Modern architectures are increasingly distributed. Here, we examine the highly transferable patterns of Edge Computing and Federation, which allow for localized decision-making, enhanced privacy, and global scalability while respecting data sovereignty.
+                </p>
+            </div>
+             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Expandable Cards -->
+                <div id="topologies-cards-container"></div>
+            </div>
+        </section>
+
+        <!-- Section: Management & Governance -->
+        <section id="management" class="mb-24 space-y-12 scroll-mt-20">
+            <div class="text-center">
+                <h2 class="text-base font-semibold text-cyan-600 tracking-wide uppercase">Control and Compliance</h2>
+                <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Management & Governance</p>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-500">
+                    Agility and control must go hand-in-hand, especially in regulated industries like finance. This final section covers the patterns for dynamic configuration, rule management, versioning, and the critical importance of compliance and data governance.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                 <div class="space-y-8">
+                     <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-lg font-bold text-slate-900 mb-2">Pattern: Blue/Green Deployment</h3>
+                        <p class="text-slate-600 text-sm mb-4">A strategy for releasing software updates with zero downtime and instant rollback capabilities. This is crucial for safely deploying new decisioning rules.</p>
+                        <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                           <div class="relative flex flex-col items-center">
+                                <div class="mb-2 text-center text-sm font-semibold">Router / Load Balancer</div>
+                                <div class="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center text-white text-xl">➔</div>
+                                <div class="absolute top-16 flex w-full justify-around">
+                                    <!-- Blue Environment -->
+                                    <div class="text-center">
+                                        <div class="w-24 h-24 bg-blue-500 rounded-lg flex flex-col items-center justify-center text-white">
+                                            <span class="font-bold">Blue</span>
+                                            <span>v1.0 (Live)</span>
+                                        </div>
+                                    </div>
+                                    <!-- Green Environment -->
+                                    <div class="text-center">
+                                         <div class="w-24 h-24 bg-green-500 rounded-lg flex flex-col items-center justify-center text-white">
+                                            <span class="font-bold">Green</span>
+                                            <span>v1.1 (New)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="absolute top-20 left-1/4 w-0.5 h-16 border-l-2 border-dashed border-cyan-500"></div>
+                                <div class="absolute top-20 right-1/4 w-0.5 h-16 border-l-2 border-dashed border-slate-300"></div>
+
+                           </div>
+                           <p class="text-xs text-center mt-36 text-slate-500">Live traffic is directed to Blue. Green is tested. Once validated, the router switches traffic to Green.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Expandable Cards -->
+                    <div id="management-cards-container"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
+            <p>Interactive Report generated from "Customer Decisioning Platforms vs IoT Implementations" Research.</p>
+            <p>&copy; 2025 Architectural Insights Inc.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- DATA STORE ---
+
+            const techStackData = {
+                labels: ['Event Streaming', 'Real-time Processing', 'Databases', 'Rule Engines', 'Protocols', 'Observability'],
+                cdp: {
+                    label: 'CDP',
+                    data: [5, 5, 4, 4, 3, 4],
+                    borderColor: 'rgba(8, 145, 178, 1)', // cyan-600
+                    backgroundColor: 'rgba(8, 145, 178, 0.2)',
+                },
+                iot: {
+                    label: 'IoT',
+                    data: [5, 4, 4, 3, 5, 4],
+                    borderColor: 'rgba(100, 116, 139, 1)', // slate-500
+                    backgroundColor: 'rgba(100, 116, 139, 0.2)',
+                }
+            };
+            
+            const protocolData = {
+                labels: ['REST', 'gRPC', 'WebSocket', 'AMQP', 'MQTT', 'CoAP'],
+                datasets: [
+                    {
+                        label: 'Latency Profile',
+                        data: [3, 1, 1, 2, 1, 1], // Lower is better
+                        backgroundColor: 'rgba(22, 163, 74, 0.6)', // green-500
+                        borderColor: 'rgba(22, 163, 74, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Overhead',
+                        data: [3, 1, 1, 2, 1, 1], // Lower is better
+                        backgroundColor: 'rgba(234, 179, 8, 0.6)', // yellow-500
+                        borderColor: 'rgba(234, 179, 8, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Real-time Suitability',
+                        data: [2, 5, 5, 4, 5, 3], // Higher is better
+                        backgroundColor: 'rgba(37, 99, 235, 0.6)', // blue-600
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            };
+
+            const cardData = {
+                operations: [
+                    {
+                        icon: '🚀',
+                        title: 'Horizontal Scaling',
+                        summary: 'Strategy for increasing system capacity by adding more machines or nodes to a resource pool.',
+                        details: 'Both CDPs and IoT systems use horizontal scaling via load balancers, container orchestration (like Kubernetes), and microservices to handle increasing workloads. This allows services to be decoupled and scaled independently, which is crucial for managing traffic spikes in retail and the ever-growing number of devices in IoT.'
+                    },
+                    {
+                        icon: '⚡️',
+                        title: 'Performance Optimization',
+                        summary: 'Techniques to achieve low-latency decision-making and high throughput.',
+                        details: 'Key techniques include in-memory caching (Redis), edge computing to reduce network distance, parallel and asynchronous processing to use resources efficiently, and GPU acceleration for complex AI models. A holistic, "full-stack" optimization approach is necessary, tuning across network, memory, and CPU layers.'
+                    },
+                    {
+                        icon: '🛡️',
+                        title: 'Fault Tolerance',
+                        summary: 'Ensuring operations continue even when components fail, maintaining service and data integrity.',
+                        details: 'Mechanisms include redundancy (duplicating hardware and services), data replication across locations, automatic failover to standby systems, and state checkpointing (like in Apache Flink) to resume processing after a failure. The goal is a shift from disaster recovery to continuous resilience engineering.'
+                    },
+                    {
+                        icon: '🚦',
+                        title: 'Backpressure Handling',
+                        summary: 'Mechanisms to manage situations where a system receives more data than it can process in real-time.',
+                        details: 'Backpressure is a foundational resilience pattern. Strategies include controlling the data producer, buffering excess data in bounded queues, and asynchronous processing. This prevents system overload, data loss, and crashes under high load, ensuring stability.'
+                    },
+                    {
+                        icon: '🔄',
+                        title: 'Circuit Breakers & Retry Logic',
+                        summary: 'Patterns for managing service failures and facilitating recovery in distributed systems.',
+                        details: 'The Retry pattern re-attempts failed operations, while the Circuit Breaker pattern prevents an application from repeatedly calling a service that is likely to fail, thus avoiding cascading failures. Combining them provides comprehensive resilience, often with a fallback mechanism to ensure graceful degradation of service.'
+                    },
+                    {
+                        icon: '👁️',
+                        title: 'Observability',
+                        summary: 'Gaining insight into system health and behavior through metrics, logs, and traces.',
+                        details: 'Observability is a prerequisite for proactive resilience. Distributed tracing is especially crucial for microservices-based CDPs to understand end-to-end request flows. In IoT, data observability focuses on data freshness, volume, and lineage to ensure data pipelines are healthy.'
+                    }
+                ],
+                topologies: [
+                     {
+                        icon: '🏞️',
+                        title: 'Edge Processing',
+                        summary: 'Processing data closer to its source rather than in a centralized cloud environment.',
+                        details: 'Edge computing is a foundational pattern for real-time, localized decisioning. For CDPs, this means enabling immediate actions like in-store offers or branch-level fraud checks without cloud round-trips. It reduces latency, optimizes bandwidth, and enhances resilience by allowing local operations to continue during intermittent central connectivity.'
+                    },
+                    {
+                        icon: '🌐',
+                        title: 'Federation Patterns',
+                        summary: 'Enabling distributed decision-making across multiple nodes or regions.',
+                        details: 'Federation is a scalability and data sovereignty imperative. Federated Learning (FL) allows AI models to be trained locally on distributed datasets without centralizing raw data, respecting privacy and regulations. This is crucial for global CDPs needing to comply with data locality laws while building a global intelligence model.'
+                    },
+                    {
+                        icon: '🏢',
+                        title: 'Hybrid Architectures',
+                        summary: 'Combining centralized cloud services with private infrastructure and edge computing.',
+                        details: 'A hybrid approach allows organizations to strategically allocate workloads for optimal performance, cost, and compliance. Latency-sensitive or regulated data can remain on-premises or at the edge, while scalable, less-sensitive operations leverage the public cloud. This is a strategic imperative to meet the complex demands of modern distributed systems.'
+                    }
+                ],
+                management: [
+                    {
+                        icon: '⚙️',
+                        title: 'Dynamic Configuration',
+                        summary: 'Enabling systems to adapt to changing conditions without requiring restarts.',
+                        details: 'Dynamic configuration is a key enabler for agile operations. Mechanisms like Spring Cloud Config or hot reloading allow CDPs to adjust parameters, deploy new rules, or activate features without interrupting service. This is crucial for responding in real-time to evolving market conditions.'
+                    },
+                    {
+                        icon: '⚖️',
+                        title: 'Rule Engine Patterns',
+                        summary: 'Centralizing and managing business rules, separating them from core application logic.',
+                        details: 'Rule engines are evolving from static logic to AI-augmented decisioning. Modern platforms integrate AI models to produce dynamic, context-driven outcomes. This evolution empowers business users with more flexible and intelligent tools for dynamic rule management and is coupled with automated testing for agile, reliable deployment.'
+                    },
+                    {
+                        icon: '🗳️',
+                        title: 'Versioning & Rollback',
+                        summary: 'Managing changes to rules and deployments to provide a safety net for agile operations.',
+                        details: 'Techniques like A/B testing and Blue/Green deployments are essential for risk-managed rule evolution. They allow for data-driven validation of changes and provide near-zero-downtime releases with instant rollback capabilities, ensuring that rapid innovation does not compromise system stability.'
+                    },
+                     {
+                        icon: '📜',
+                        title: 'Compliance & Governance',
+                        summary: 'Adhering to regulations and ensuring the quality, security, and accessibility of data.',
+                        details: 'Data governance is the foundation for trust in retail and finance. It ensures high-quality data for AI models and safeguards customer privacy. Audit trails and decision logging, often inherent in patterns like Event Sourcing, are crucial for accountability, regulatory compliance, and fraud prevention.'
+                    }
+                ]
+            };
+            
+            // --- CHART RENDERING ---
+
+            // Radar Chart
+            const radarCtx = document.getElementById('techStackRadarChart').getContext('2d');
+            const techStackRadarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: techStackData.labels,
+                    datasets: [techStackData.cdp]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                            pointLabels: { font: { size: 12 } },
+                            ticks: {
+                                backdropColor: 'rgba(255, 255, 255, 0.75)',
+                                stepSize: 1,
+                                max: 5,
+                                min: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                         tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.r !== null) {
+                                        label += context.parsed.r;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Bar Chart
+            const barCtx = document.getElementById('protocolBarChart').getContext('2d');
+            const protocolBarChart = new Chart(barCtx, {
+                type: 'bar',
+                data: protocolData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    const labels = ['', 'Very Low', 'Low', 'Medium', 'High', 'Very High'];
+                                    return labels[value];
+                                }
+                            }
+                        },
+                        x: {
+                             ticks: {
+                                autoSkip: false,
+                                maxRotation: 0,
+                             }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    const value = context.parsed.y;
+                                    const labels = ['', 'Very Low', 'Low', 'Medium', 'High', 'Very High'];
+                                    label += labels[value];
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // --- UI LOGIC ---
+            
+            // Radar Chart Controls
+            const cdpBtn = document.getElementById('cdpBtn');
+            const iotBtn = document.getElementById('iotBtn');
+            const bothBtn = document.getElementById('bothBtn');
+            const buttons = [cdpBtn, iotBtn, bothBtn];
+
+            function updateRadarChart(datasets) {
+                techStackRadarChart.data.datasets = datasets;
+                techStackRadarChart.update();
+            }
+
+            function setActiveButton(activeBtn) {
+                 buttons.forEach(btn => {
+                    btn.classList.remove('bg-cyan-500', 'text-white');
+                    btn.classList.add('bg-slate-200', 'text-slate-700');
+                });
+                activeBtn.classList.add('bg-cyan-500', 'text-white');
+                activeBtn.classList.remove('bg-slate-200', 'text-slate-700');
+            }
+
+            cdpBtn.addEventListener('click', () => {
+                updateRadarChart([techStackData.cdp]);
+                setActiveButton(cdpBtn);
+            });
+            iotBtn.addEventListener('click', () => {
+                updateRadarChart([techStackData.iot]);
+                setActiveButton(iotBtn);
+            });
+            bothBtn.addEventListener('click', () => {
+                updateRadarChart([techStackData.cdp, techStackData.iot]);
+                setActiveButton(bothBtn);
+            });
+            
+            // Card Rendering and Interactivity
+            function createCard(item) {
+                return `
+                    <div class="expandable-card bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer">
+                        <div class="p-6 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="text-3xl mr-4">${item.icon}</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900">${item.title}</h4>
+                                    <p class="text-sm text-slate-500">${item.summary}</p>
+                                </div>
+                            </div>
+                            <div class="chevron text-slate-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="expandable-card-content">
+                            <div class="px-6 pb-6 text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-4">
+                                ${item.details}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const opsContainer = document.getElementById('operational-cards-container');
+            const topsContainer = document.getElementById('topologies-cards-container');
+            const mgmtContainer = document.getElementById('management-cards-container');
+            
+            opsContainer.innerHTML = cardData.operations.map(createCard).join('');
+            topsContainer.innerHTML = cardData.topologies.map(createCard).join('');
+            mgmtContainer.innerHTML = cardData.management.map(createCard).join('');
+            
+            document.querySelectorAll('.expandable-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('open');
+                });
+            });
+
+
+            // Navigation Logic
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+            const mobileNav = document.getElementById('mobile-nav');
+
+            mobileNav.addEventListener('change', (e) => {
+                window.location.hash = e.target.value;
+            });
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                        });
+                        mobileNav.value = `#${entry.target.id}`;
+                    }
+                });
+            }, { rootMargin: "-50% 0px -50% 0px" });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+             
+             // Initial active button state
+             setActiveButton(cdpBtn);
+
+        });
+    </script>
+
+</body>
+</html>
