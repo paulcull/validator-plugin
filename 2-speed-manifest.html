@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Speed Lineage: A Research Framework</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chosen Palette: Warm Professional (Bg: Stone-50, Surface: White, Primary: Slate-800, Accent: Amber-600/Blue-600) -->
+    
+    <!-- Application Structure Plan: 
+         The application is designed as an interactive research dashboard. 
+         1. Executive Framework: Establishes the "Two-Speed" concept (Design Time vs. Run Time) using a comparative interactive toggle.
+         2. Integration Spectrum: A tabbed interface exploring the four integration methods (API, File, Event, Database). This structure allows the user to deep-dive into each method without losing context of the overall framework.
+         3. The "Fix" Strategy: A specific section addressing the "Derived Manifest" structure, offering a solution to the problem posed in the prompt.
+         4. Recommendation Engine: A dynamic summary that synthesizes the findings.
+         This structure was chosen to separate the abstract theory (Two-Speed) from the concrete implementation details (Integration Methods), allowing users to map the theory to practice.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Two-Speed Concept: Goal -> Compare. Method -> CSS/HTML Toggle Cards. Interaction -> Toggle view. Justification -> Clearly distinguishes static artifacts from dynamic logs.
+         2. File Integration Strategy: Goal -> Inform/Relationships. Method -> Chart.js Scatter Plot. Interaction -> Hover for details on Volume vs. Latency trade-offs. Justification -> Visualizes why different file patterns require different lineage approaches.
+         3. Event/Schema Registry: Goal -> Organize. Method -> HTML/CSS Flow Diagram. Interaction -> Click nodes to reveal payload structure. Justification -> Shows the decoupling of Schema (Design) and Message (Runtime).
+         4. Database Pattern: Goal -> Compare. Method -> Interactive Table. Interaction -> Filter rows. Justification -> Direct comparison of JDBC vs. ORM extraction methods.
+         Confirming NO SVG/Mermaid.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        
+        /* Chart Container Styling - Mandatory Requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 400px; }
+        }
+
+        /* Custom Scrollbar for sleek look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .nav-item.active {
+            background-color: #e7e5e4; /* stone-200 */
+            border-left: 4px solid #d97706; /* amber-600 */
+            font-weight: 600;
+        }
+        
+        .tab-btn.active {
+            border-bottom: 3px solid #d97706;
+            color: #d97706;
+        }
+
+        .flow-node {
+            transition: all 0.3s ease;
+        }
+        .flow-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-800 h-screen flex overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-white border-r border-stone-200 flex-col hidden md:flex shadow-sm z-10">
+        <div class="p-6 border-b border-stone-100">
+            <h1 class="text-xl font-bold text-slate-800">Lineage<span class="text-amber-600">Architect</span></h1>
+            <p class="text-xs text-stone-500 mt-1">Two-Speed Research Framework</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li><button onclick="scrollToSection('exec-summary')" class="nav-item w-full text-left px-6 py-3 hover:bg-stone-50 text-sm transition-colors active">Executive Summary</button></li>
+                <li><button onclick="scrollToSection('two-speed-model')" class="nav-item w-full text-left px-6 py-3 hover:bg-stone-50 text-sm transition-colors">The Two-Speed Model</button></li>
+                <li><button onclick="scrollToSection('integration-patterns')" class="nav-item w-full text-left px-6 py-3 hover:bg-stone-50 text-sm transition-colors">Integration Patterns</button></li>
+                <li><button onclick="scrollToSection('derived-manifest')" class="nav-item w-full text-left px-6 py-3 hover:bg-stone-50 text-sm transition-colors">Fixing the Manifest</button></li>
+                <li><button onclick="scrollToSection('recommendations')" class="nav-item w-full text-left px-6 py-3 hover:bg-stone-50 text-sm transition-colors">Strategic Recommendations</button></li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-stone-100 bg-stone-50">
+            <div class="text-xs text-stone-500">Research Version 1.2</div>
+            <div class="text-xs text-stone-400">Generated for Data Arch.</div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative scroll-smooth" id="main-content">
+        
+        <!-- Mobile Header -->
+        <div class="md:hidden bg-white p-4 border-b border-stone-200 sticky top-0 z-20 flex justify-between items-center shadow-sm">
+            <span class="font-bold text-lg">LineageArchitect</span>
+            <button id="mobile-menu-btn" class="text-slate-600 focus:outline-none">
+                <span class="text-2xl">☰</span>
+            </button>
+        </div>
+
+        <div class="max-w-5xl mx-auto px-6 py-10 space-y-16">
+
+            <!-- Section 1: Executive Summary -->
+            <section id="exec-summary" class="animate-fade-in">
+                <div class="bg-white rounded-xl p-8 shadow-sm border border-stone-200">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-4">Executive Summary: Two-Speed Lineage</h2>
+                    <p class="text-lg text-slate-600 leading-relaxed mb-6">
+                        Modern data lineage requires a bifurcation of concerns. We propose a <strong>"Two-Speed" architecture</strong> that separates <strong>Design Time</strong> artifacts (schemas, contracts, DDL) from <strong>Run Time</strong> opportunities (logs, operational metrics).
+                    </p>
+                    <p class="text-slate-600 mb-6">
+                        Attempting to reconstruct schema and intent solely from runtime logs creates "noisy," brittle lineage. Conversely, relying solely on design documents misses the operational reality. This research explores how to align these two speeds across diverse integration patterns beyond APIs, including Files, Events, and Direct Database access.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                        <div class="bg-amber-50 p-4 rounded-lg border border-amber-100">
+                            <h3 class="font-semibold text-amber-800 mb-2">The Problem</h3>
+                            <p class="text-sm text-slate-700">Derived manifests often conflate schema definition with operational execution, leading to bloated payloads and redundant processing.</p>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <h3 class="font-semibold text-blue-800 mb-2">The Solution</h3>
+                            <p class="text-sm text-slate-700">Reference, don't reconstruct. Use runtime events to point to design-time artifacts, creating a lightweight, accurate lineage graph.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: The Two-Speed Model -->
+            <section id="two-speed-model">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">The Two-Speed Model</h2>
+                    <p class="text-slate-500 mt-2">Interact with the cards below to understand the separation of concerns.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Design Time Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden group hover:border-blue-400 transition-colors cursor-pointer" onclick="updateSpeedDetails('design')">
+                        <div class="h-2 bg-blue-600"></div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold text-slate-800">Speed 1: Design Time</h3>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-semibold">Slow / Static</span>
+                            </div>
+                            <p class="text-slate-600 text-sm mb-4">The "Architectural Truth". Defined before code executes.</p>
+                            <ul class="text-sm space-y-2 text-slate-500">
+                                <li class="flex items-center"><span class="mr-2">📄</span> OpenAPI Specs (YAML)</li>
+                                <li class="flex items-center"><span class="mr-2">🗄️</span> Database DDL / Migrations</li>
+                                <li class="flex items-center"><span class="mr-2">📜</span> Avro/Protobuf Schemas</li>
+                                <li class="flex items-center"><span class="mr-2">🗺️</span> ORM Mapping Files</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Run Time Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden group hover:border-amber-400 transition-colors cursor-pointer" onclick="updateSpeedDetails('runtime')">
+                        <div class="h-2 bg-amber-500"></div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold text-slate-800">Speed 2: Run Time</h3>
+                                <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs rounded-full font-semibold">Fast / Dynamic</span>
+                            </div>
+                            <p class="text-slate-600 text-sm mb-4">The "Operational Reality". Captured as data flows.</p>
+                            <ul class="text-sm space-y-2 text-slate-500">
+                                <li class="flex items-center"><span class="mr-2">⏱️</span> Job Execution Context</li>
+                                <li class="flex items-center"><span class="mr-2">📊</span> Row Counts / Data Quality metrics</li>
+                                <li class="flex items-center"><span class="mr-2">🔗</span> Input/Output Dataset URIs</li>
+                                <li class="flex items-center"><span class="mr-2">🆔</span> Run IDs & Trace IDs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Detail Area -->
+                <div id="speed-detail-panel" class="mt-6 bg-slate-800 text-white p-6 rounded-xl hidden transition-all duration-300">
+                    <h4 id="detail-title" class="font-bold text-lg mb-2"></h4>
+                    <p id="detail-text" class="text-slate-300 text-sm"></p>
+                </div>
+            </section>
+
+            <!-- Section 3: Integration Patterns -->
+            <section id="integration-patterns">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Integration Spectrum</h2>
+                    <p class="text-slate-500 mt-2">Expanding the research beyond API to File, Event, and Database integrations.</p>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-stone-200 mb-6 overflow-x-auto">
+                    <button class="tab-btn px-6 py-3 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors active" onclick="switchTab('file')">File Based</button>
+                    <button class="tab-btn px-6 py-3 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors" onclick="switchTab('event')">Event & Messaging</button>
+                    <button class="tab-btn px-6 py-3 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors" onclick="switchTab('db')">Direct Database</button>
+                </div>
+
+                <!-- Tab Content: File Based -->
+                <div id="tab-file" class="tab-content block">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <div class="flex flex-col lg:flex-row gap-8">
+                            <div class="lg:w-1/2">
+                                <h3 class="font-bold text-lg text-slate-800 mb-3">File: Daily, Delta, Micro-batch</h3>
+                                <p class="text-sm text-slate-600 mb-4">
+                                    File integration challenges lineage because the "dataset" definition varies by frequency. 
+                                    <strong>Design Time</strong> artifacts are often missing (CSV headers are weak contracts).
+                                </p>
+                                <ul class="space-y-3 mb-4">
+                                    <li class="bg-stone-50 p-3 rounded border border-stone-100">
+                                        <span class="font-bold text-xs uppercase text-slate-500 block">Strategy 1: Full Daily</span>
+                                        <span class="text-sm text-slate-700">Treat the S3 path/Folder as the dataset. High stability, low lineage frequency.</span>
+                                    </li>
+                                    <li class="bg-stone-50 p-3 rounded border border-stone-100">
+                                        <span class="font-bold text-xs uppercase text-slate-500 block">Strategy 2: Delta/Micro-batch</span>
+                                        <span class="text-sm text-slate-700">High frequency. Lineage should aggregate runs or risk "Log Explosion".</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="lg:w-1/2 flex flex-col justify-center">
+                                <div class="chart-container">
+                                    <canvas id="fileChart"></canvas>
+                                </div>
+                                <p class="text-center text-xs text-stone-500 mt-2">Trade-off: Lineage Granularity vs. Overhead</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Event Based -->
+                <div id="tab-event" class="tab-content hidden">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="font-bold text-lg text-slate-800 mb-3">Event: Schema Registry Exploitation</h3>
+                        <p class="text-sm text-slate-600 mb-6">
+                            Events (Kafka, RabbitMQ) often have the strongest <strong>Design Time</strong> artifacts via Schema Registries (Avro/Protobuf).
+                        </p>
+
+                        <!-- Conceptual Diagram using Flex/Grid (No SVG) -->
+                        <div class="bg-stone-50 p-6 rounded-lg border border-stone-200 overflow-x-auto">
+                            <div class="flex items-center justify-between min-w-[600px] gap-4">
+                                <!-- Producer -->
+                                <div class="flex flex-col items-center group">
+                                    <div class="w-24 h-12 bg-white border-2 border-slate-300 rounded flex items-center justify-center font-bold text-slate-700 shadow-sm">Producer</div>
+                                    <div class="h-8 w-0.5 bg-slate-300"></div>
+                                </div>
+
+                                <!-- Schema Registry (The Key) -->
+                                <div class="relative flow-node cursor-pointer" onclick="toggleEventDetail('registry')">
+                                    <div class="w-32 h-16 bg-amber-100 border-2 border-amber-500 rounded-lg flex flex-col items-center justify-center shadow-md z-10 relative">
+                                        <span class="text-xs font-bold text-amber-800">Schema Registry</span>
+                                        <span class="text-[10px] text-amber-600">ID: 1042 (Avro)</span>
+                                    </div>
+                                    <!-- Connection Lines -->
+                                    <div class="absolute top-1/2 left-0 w-full h-0.5 bg-dashed border-t-2 border-amber-300 -z-0 transform scale-x-150"></div>
+                                </div>
+
+                                <!-- Topic -->
+                                <div class="relative flow-node cursor-pointer" onclick="toggleEventDetail('topic')">
+                                    <div class="w-32 h-16 bg-blue-100 border-2 border-blue-500 rounded-lg flex flex-col items-center justify-center shadow-md">
+                                        <span class="text-xs font-bold text-blue-800">Kafka Topic</span>
+                                        <span class="text-[10px] text-blue-600">"orders.payment"</span>
+                                    </div>
+                                </div>
+
+                                <!-- Consumer -->
+                                <div class="flex flex-col items-center">
+                                    <div class="h-8 w-0.5 bg-slate-300"></div>
+                                    <div class="w-24 h-12 bg-white border-2 border-slate-300 rounded flex items-center justify-center font-bold text-slate-700 shadow-sm">Consumer</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Explanation Area -->
+                        <div id="event-explanation" class="mt-4 p-4 bg-slate-800 text-slate-200 rounded text-sm hidden">
+                            <!-- JS populates this -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Database -->
+                <div id="tab-db" class="tab-content hidden">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="font-bold text-lg text-slate-800 mb-3">Database: JDBC vs. ORM</h3>
+                        <p class="text-sm text-slate-600 mb-6">
+                            Direct database access presents a split. <strong>ORM</strong> (Hibernate) provides rich Design Time metadata (Entity classes). <strong>JDBC</strong> is purely Runtime (SQL strings).
+                        </p>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-slate-600">
+                                <thead class="text-xs text-slate-700 uppercase bg-stone-100">
+                                    <tr>
+                                        <th class="px-6 py-3">Method</th>
+                                        <th class="px-6 py-3">Design Time Artifact</th>
+                                        <th class="px-6 py-3">Runtime Opportunity</th>
+                                        <th class="px-6 py-3">Lineage Strategy</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="bg-white border-b">
+                                        <td class="px-6 py-4 font-medium text-slate-900">ORM (Hibernate/JPA)</td>
+                                        <td class="px-6 py-4 text-amber-700">@Entity Annotations / XML</td>
+                                        <td class="px-6 py-4">Session.flush()</td>
+                                        <td class="px-6 py-4">Parse Annotations for Schema, use Runtime for Row Count.</td>
+                                    </tr>
+                                    <tr class="bg-white border-b">
+                                        <td class="px-6 py-4 font-medium text-slate-900">JDBC / Raw SQL</td>
+                                        <td class="px-6 py-4 text-stone-400">None (Implicit in Code)</td>
+                                        <td class="px-6 py-4">Driver.executeQuery()</td>
+                                        <td class="px-6 py-4">SQL Parsing (OpenLineage SQL parser) of query string.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Fixing the Manifest -->
+            <section id="derived-manifest">
+                <div class="bg-slate-800 text-white rounded-xl p-8 shadow-md">
+                    <h2 class="text-2xl font-bold mb-4 text-amber-400">Fixing the Derived Manifest</h2>
+                    <p class="text-slate-300 mb-6">
+                        The core failure in current implementations is the attempt to <em>embed</em> the full schema in every runtime lineage event. This violates the Two-Speed principle.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Bad Pattern -->
+                        <div class="bg-slate-900/50 p-6 rounded border border-red-900/30">
+                            <h3 class="text-red-400 font-bold mb-2">❌ The Anti-Pattern</h3>
+                            <div class="font-mono text-xs text-slate-400">
+                                <span class="text-purple-400">Event</span>: {<br>
+                                &nbsp;&nbsp;"runId": "123",<br>
+                                &nbsp;&nbsp;"inputs": [{<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;"name": "users",<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-red-500">"schema": { ... 500 lines of JSON ... }</span><br>
+                                &nbsp;&nbsp;}]<br>
+                                }
+                            </div>
+                            <p class="text-xs text-red-300 mt-2">Bloated. Schema is repeated every micro-batch. Hard to evolve.</p>
+                        </div>
+
+                        <!-- Good Pattern -->
+                        <div class="bg-slate-900/50 p-6 rounded border border-green-900/30">
+                            <h3 class="text-green-400 font-bold mb-2">✅ The Recommendation</h3>
+                            <div class="font-mono text-xs text-slate-400">
+                                <span class="text-purple-400">Event</span>: {<br>
+                                &nbsp;&nbsp;"runId": "123",<br>
+                                &nbsp;&nbsp;"inputs": [{<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;"name": "users",<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-green-500">"schemaURL": "registry://users/v1"</span><br>
+                                &nbsp;&nbsp;}]<br>
+                                }
+                            </div>
+                            <p class="text-xs text-green-300 mt-2">Efficient. Runtime event points to Design Time artifact.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5: Recommendations -->
+            <section id="recommendations" class="pb-10">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6">Research Conclusions</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-amber-500">
+                        <h3 class="font-bold text-lg mb-2">1. Decouple Speeds</h3>
+                        <p class="text-sm text-slate-600">Never mix artifact definition (Design) with execution logging (Runtime). Use pointers/URIs to link them.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-500">
+                        <h3 class="font-bold text-lg mb-2">2. Registry First</h3>
+                        <p class="text-sm text-slate-600">For Event & API integration, the Schema Registry / OpenAPI spec is the source of truth. Do not scrape payloads if a registry exists.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-slate-500">
+                        <h3 class="font-bold text-lg mb-2">3. Aggregate High Velocity</h3>
+                        <p class="text-sm text-slate-600">For Micro-batches and Files, aggregate runtime lineage events to prevent noise, while maintaining a static link to the dataset definition.</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            currentTab: 'file',
+            charts: {}
+        };
+
+        // --- Navigation Logic ---
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+            
+            // Update Sidebar UI
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            // In a real app, we'd calculate which is in view, but for click nav, this suffices
+            event.currentTarget.classList.add('active');
+        }
+
+        // --- Two-Speed Interaction ---
+        function updateSpeedDetails(type) {
+            const panel = document.getElementById('speed-detail-panel');
+            const title = document.getElementById('detail-title');
+            const text = document.getElementById('detail-text');
+
+            panel.classList.remove('hidden');
+            
+            if (type === 'design') {
+                panel.className = "mt-6 bg-blue-900 text-white p-6 rounded-xl transition-all duration-300 animate-fade-in";
+                title.innerText = "Design Time Analysis";
+                text.innerText = "At Design Time, we process artifacts like YAML, SQL DDL, and Avro. These tell us the INTENT of the data flow. This data is high-value, low-velocity. We should harvest this during CI/CD pipelines, not during application execution.";
+            } else {
+                panel.className = "mt-6 bg-amber-800 text-white p-6 rounded-xl transition-all duration-300 animate-fade-in";
+                title.innerText = "Run Time Analysis";
+                text.innerText = "At Run Time, we capture the REALITY. Did the job fail? How many rows? This data is high-velocity. We should harvest this via lightweight listeners or agents that emit minimal events referencing the Design Time IDs.";
+            }
+        }
+
+        // --- Tab Switching Logic ---
+        function switchTab(tabName) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            // Update Content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            state.currentTab = tabName;
+        }
+
+        // --- Event Diagram Logic ---
+        function toggleEventDetail(node) {
+            const box = document.getElementById('event-explanation');
+            box.classList.remove('hidden');
+            
+            if (node === 'registry') {
+                box.innerHTML = `
+                    <strong class="text-amber-400">Design Time Artifact (Registry):</strong><br>
+                    Here resides the Avro/Protobuf schema. It defines fields, types, and validation rules. 
+                    <br><em>Lineage Strategy:</em> Harvest this ONCE when the schema changes. Give it a version ID (e.g., 1042).
+                `;
+            } else if (node === 'topic') {
+                box.innerHTML = `
+                    <strong class="text-blue-400">Run Time Artifact (Topic/Message):</strong><br>
+                    The Kafka message header contains the Schema ID (1042). The payload is binary.
+                    <br><em>Lineage Strategy:</em> The OpenLineage event simply reports: "I wrote to Topic X using Schema ID 1042". No need to include the full field list.
+                `;
+            }
+        }
+
+        // --- Chart.js Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('fileChart').getContext('2d');
+            
+            // Scatter plot to show Relationship between Batch Frequency and Lineage Complexity
+            state.charts.fileChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'File Integration Patterns',
+                        data: [
+                            { x: 1, y: 10, label: 'Daily Full Dump', desc: 'Low freq, High Volume' },
+                            { x: 5, y: 8, label: 'Hourly Delta', desc: 'Med freq, Med Volume' },
+                            { x: 10, y: 3, label: 'Micro-batch', desc: 'High freq, Low Volume' }
+                        ],
+                        backgroundColor: ['#d97706', '#2563eb', '#475569'],
+                        pointRadius: 10,
+                        pointHoverRadius: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.label + ': ' + context.raw.desc;
+                                }
+                            }
+                        },
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Complexity: Update Frequency (X) vs. Data Volume (Y)'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Frequency of Updates (Low -> High)' },
+                            min: 0, max: 12,
+                            grid: { display: false }
+                        },
+                        y: {
+                            title: { display: true, text: 'Volume per File (Low -> High)' },
+                            min: 0, max: 12
+                        }
+                    }
+                }
+            });
+
+            // Mobile menu toggle
+            document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+                const sidebar = document.querySelector('aside');
+                sidebar.classList.toggle('hidden');
+                sidebar.classList.toggle('absolute');
+                sidebar.classList.toggle('h-full');
+                sidebar.classList.toggle('z-50');
+            });
+        });
+
+    </script>
+</body>
+</html>
