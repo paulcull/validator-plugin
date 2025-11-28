@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAPI & OpenLineage Compatibility Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      Chosen Palette: Calm Harmony (BG: amber-50, stone-100; Text/Borders: blue-800, blue-700; Accent: amber-600)
+      Application Structure Plan: A single-page design with a sticky left-hand navigation and a main scrollable content area. This structure allows users to get a quick overview from the nav, jump to any section easily, and also read the report from top to bottom in a logical flow. The main sections are: Summary, Core Concepts, Comparison, Integration Model, and Use Cases. This thematic, section-based structure is more user-friendly for exploration than a linear report. Interactions include: smooth-scroll navigation with active state tracking, tabbed views for "Core Concepts" and "Use Cases", and an interactive "pills" section for "Integration Details" to break down complex mappings. This design was chosen to make a dense, technical topic digestible and easy to navigate.
+      Visualization & Content Choices:
+      1. Report Info: Core Concepts (OpenAPI vs OpenLineage). Goal: Inform. Viz/Method: Interactive tabs (HTML/JS). Interaction: Click tab to show details. Justification: Prevents a wall of text; allows user to focus on one concept at a time.
+      2. Report Info: Direct Comparison. Goal: Compare. Viz/Method: A styled HTML table. Interaction: None (static). Justification: A table is the clearest, most direct way to present a structured comparison of features.
+      3. Report Info: "API as a Job" Model. Goal: Organize/Relationships. Viz/Method: HTML/Tailwind-based diagram (divs, borders, flexbox). Interaction: None (static diagram). Justification: Visually demonstrates the conceptual model without using forbidden SVG/Mermaid.
+      4. Report Info: OpenAPI Enrichment. Goal: Organize/Inform. Viz/Method: Interactive "pills" (HTML/JS). Interaction: Click pill to show relevant text. Justification: Breaks a list of mappings into interactive, digestible chunks.
+      5. Report Info: Use Cases. Goal: Inform/Change. Viz/Method: Interactive tabs (HTML/JS). Interaction: Click tab to show scenario details. Justification: A standard, intuitive UI pattern for presenting multiple examples in a compact space.
+      CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        
+        .sticky-nav-link {
+            transition: all 0.3s ease;
+        }
+        .sticky-nav-link.active {
+            background-color: #BFDBFE; 
+            color: #1E40AF; 
+            font-weight: 500;
+            transform: translateX(4px);
+        }
+        .content-section {
+            min-height: 80vh;
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background-color: #1D4ED8;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .pill-btn {
+            transition: all 0.3s ease;
+        }
+        .pill-btn.active {
+            background-color: #60A5FA;
+            color: white;
+        }
+        .pill-content {
+            display: none;
+        }
+        .pill-content.active {
+            display: block;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .flow-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 1.5rem;
+            background-color: #EFF6FF;
+            border: 2px solid #BFDBFE;
+            border-radius: 0.5rem;
+            color: #1E3A8A;
+            font-weight: 500;
+            text-align: center;
+            min-width: 150px;
+        }
+        .flow-arrow {
+            font-size: 2rem;
+            color: #9CA3AF;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body class="bg-amber-50 text-stone-800">
+
+    <div class="container mx-auto max-w-7xl px-4 py-8">
+        
+        <header class="mb-10 border-b-2 border-amber-200 pb-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-900">Analysis of OpenAPI & OpenLineage Compatibility</h1>
+            <p class="mt-3 text-lg text-blue-700">An Interactive Report on API Contracts and Data Lineage</p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            
+            <nav class="md:w-1/4 md:sticky md:top-8 h-full">
+                <ul class="space-y-3">
+                    <li><a href="#summary" class="sticky-nav-link block p-3 rounded-lg font-medium text-stone-700 hover:bg-amber-100">Executive Summary</a></li>
+                    <li><a href="#concepts" class="sticky-nav-link block p-3 rounded-lg font-medium text-stone-700 hover:bg-amber-100">Core Concepts</a></li>
+                    <li><a href="#comparison" class="sticky-nav-link block p-3 rounded-lg font-medium text-stone-700 hover:bg-amber-100">Direct Comparison</a></li>
+                    <li><a href="#integration" class="sticky-nav-link block p-3 rounded-lg font-medium text-stone-700 hover:bg-amber-100">Integration Model</a></li>
+                    <li><a href="#use-cases" class="sticky-nav-link block p-3 rounded-lg font-medium text-stone-700 hover:bg-amber-100">Use Cases</a></li>
+                    <li><a href="#conclusion" class="sticky-nav-link block p-3 rounded-lg font-medium text-stone-700 hover:bg-amber-100">Conclusion</a></li>
+                </ul>
+            </nav>
+
+            <main class="md:w-3/4">
+                
+                <section id="summary" class="content-section bg-white p-6 rounded-lg shadow-md scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-blue-800 mb-4">Executive Summary</h2>
+                    <p class="text-lg leading-relaxed text-stone-700">
+                        This report analyzes the relationship between the OpenAPI specification and the OpenLineage standard. The two are not interchangeable but are highly complementary. OpenAPI defines an API's <strong class="font-semibold text-blue-700">contract or interface</strong>, while OpenLineage tracks the <strong class="font-semibold text-amber-600">flow of data</strong> through processes.
+                    </p>
+                    <p class="text-lg leading-relaxed text-stone-700 mt-4">
+                        An API endpoint, defined by an OpenAPI specification, can be modeled as a "Job" within OpenLineage. The OpenAPI spec itself provides a rich source of metadata (like operation names, data schemas, and descriptions) that can be used to create detailed, high-quality OpenLineage manifests (events). This integration allows organizations to extend data lineage tracking to their API ecosystem, providing end-to-end visibility of how data is produced and consumed.
+                    </p>
+                </section>
+
+                <section id="concepts" class="content-section bg-white p-6 rounded-lg shadow-md mt-8 scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-blue-800 mb-6">Core Concepts</h2>
+                    <p class="text-lg text-stone-700 mb-6">
+                        To understand the compatibility, it's essential to first define the purpose of each standard. Use the tabs below to explore the core function and key components of both OpenAPI and OpenLineage.
+                    </p>
+                    
+                    <div class="border-b border-stone-300 mb-6">
+                        <nav class="flex space-x-2" id="concept-tabs">
+                            <button class="tab-btn active py-3 px-5 font-medium text-lg rounded-t-lg" data-target="openapi">OpenAPI</button>
+                            <button class="tab-btn py-3 px-5 font-medium text-lg rounded-t-lg text-stone-600" data-target="openlineage">OpenLineage</button>
+                        </nav>
+                    </div>
+
+                    <div id="concept-content">
+                        <div id="openapi" class="tab-content active">
+                            <h3 class="text-2xl font-semibold text-blue-700 mb-3">OpenAPI Specification</h3>
+                            <p class="text-base leading-relaxed text-stone-700 mb-4">
+                                <strong>Purpose:</strong> To define a standard, language-agnostic interface for RESTful APIs. It acts as the "blueprint" or "contract" for an API, describing exactly what it can do and how to interact with it.
+                            </p>
+                            <h4 class="text-xl font-semibold text-stone-800 mb-2">Key Components:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700">
+                                <li><strong>Paths:</strong> The API endpoints (e.g., <code>/users/{id}</code>) and the HTTP methods (<code>GET</code>, <code>POST</code>) for each.</li>
+                                <li><strong>Operations:</strong> Details for each HTTP method, including parameters, request bodies, and possible responses.</li>
+                                <li><strong>Components & Schemas:</strong> Reusable data models (JSON Schema) that define the structure of request and response payloads (e.g., a <code>User</code> object).</li>
+                            </ul>
+                        </div>
+                        <div id="openlineage" class="tab-content">
+                            <h3 class="text-2xl font-semibold text-amber-600 mb-3">OpenLineage Standard</h3>
+                            <p class="text-base leading-relaxed text-stone-700 mb-4">
+                                <strong>Purpose:</strong> To provide an open standard for collecting and analyzing data lineage. It captures metadata about *what* process ran, *when*, and *what data* it consumed or produced. It creates a "receipt" of a data processing event.
+                            </p>
+                            <h4 class="text-xl font-semibold text-stone-800 mb-2">Key Components:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700">
+                                <li><strong>Job:</strong> A process that consumes or produces data (e.g., an ETL pipeline, a Spark job, or an API call).</li>
+                                <li><strong>Run:</strong> A specific execution of a Job, with a start and end time.</li>
+                                <li><strong>Dataset:</strong> A producer or consumer of data (e.g., a database table, a Kafka topic, or a file).</li>
+                                <li><strong>Facets:</strong> Metadata attached to Jobs, Runs, or Datasets (e.g., schema, version, source code location).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="comparison" class="content-section bg-white p-6 rounded-lg shadow-md mt-8 scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-blue-800 mb-6">Direct Comparison</h2>
+                    <p class="text-lg text-stone-700 mb-6">
+                        An OpenLineage manifest is not designed to represent an API's static definition. The following table highlights the fundamental differences in purpose and scope.
+                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-stone-300 border border-stone-300 rounded-lg">
+                            <thead class="bg-stone-100">
+                                <tr>
+                                    <th class="py-3 px-4 text-left text-sm font-semibold text-stone-800 uppercase">Aspect</th>
+                                    <th class="py-3 px-4 text-left text-sm font-semibold text-stone-800 uppercase">OpenAPI</th>
+                                    <th class="py-3 px-4 text-left text-sm font-semibold text-stone-800 uppercase">OpenLineage</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stone-200">
+                                <tr class="hover:bg-amber-50">
+                                    <td class="py-4 px-4 font-medium text-stone-800">Primary Purpose</td>
+                                    <td class="py-4 px-4 text-stone-700">API Contract Definition</td>
+                                    <td class="py-4 px-4 text-stone-700">Data Lineage Tracking</td>
+                                </tr>
+                                <tr class="hover:bg-amber-50">
+                                    <td class="py-4 px-4 font-medium text-stone-800">Scope</td>
+                                    <td class="py-4 px-4 text-stone-700">Static API Interface</td>
+                                    <td class="py-4 px-4 text-stone-700">Dynamic Data Processing Events</td>
+                                </tr>
+                                <tr class="hover:bg-amber-50">
+                                    <td class="py-4 px-4 font-medium text-stone-800">Key Primitives</td>
+                                    <td class="py-4 px-4 text-stone-700">Paths, Operations, Schemas</td>
+                                    <td class="py-4 px-4 text-stone-700">Jobs, Runs, Datasets, Facets</td>
+                                </tr>
+                                <tr class="hover:bg-amber-50">
+                                    <td class="py-4 px-4 font-medium text-stone-800">Represents...</td>
+                                    <td class="py-4 px-4 text-stone-700">The "Blueprint" (What it is)</td>
+                                    <td class="py-4 px-4 text-stone-700">The "Receipt" (What it did)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="integration" class="content-section bg-white p-6 rounded-lg shadow-md mt-8 scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-blue-800 mb-6">Integration Model: The "API as a Job"</h2>
+                    <p class="text-lg text-stone-700 mb-6">
+                        The most effective way to use both standards is to model an API endpoint as an OpenLineage "Job". When an API is called, it triggers a "Run" of that Job, which consumes and/or produces "Datasets".
+                    </p>
+
+                    <div class="bg-stone-50 p-6 rounded-lg border border-stone-200 mb-6">
+                        <h4 class="text-xl font-semibold text-center text-blue-800 mb-6">Conceptual Data Flow</h4>
+                        <div class="flow-diagram">
+                            <div class="flow-item bg-green-100 border-green-300 text-green-800">Client Request<br>(Input Dataset)</div>
+                            <div class="flow-arrow">&rarr;</div>
+                            <div class="flow-item">API Endpoint<br>(OpenLineage Job)</div>
+                            <div class="flow-arrow">&rarr;</div>
+                            <div class="flow-item bg-purple-100 border-purple-300 text-purple-800">Database Table<br>(Output Dataset)</div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-blue-800 mb-4 mt-8">Using OpenAPI to Enrich Lineage</h3>
+                    <p class="text-lg text-stone-700 mb-6">
+                        The OpenAPI spec is the perfect metadata source to enrich the OpenLineage manifests, making them more detailed and useful. Select a mapping below to see how.
+                    </p>
+
+                    <div class="flex flex-wrap gap-3 mb-4" id="pill-tabs">
+                        <button class="pill-btn active py-2 px-4 rounded-full font-medium bg-blue-100 text-blue-700 border border-blue-300" data-target="pill-job">Job Name</button>
+                        <button class="pill-btn py-2 px-4 rounded-full font-medium bg-blue-100 text-blue-700 border border-blue-300" data-target="pill-schema">Data Schemas</button>
+                        <button class="pill-btn py-2 px-4 rounded-full font-medium bg-blue-100 text-blue-700 border border-blue-300" data-target="pill-source">Source Location</button>
+                        <button class="pill-btn py-2 px-4 rounded-full font-medium bg-blue-100 text-blue-700 border border-blue-300" data-target="pill-desc">Description</button>
+                    </div>
+
+                    <div id="pill-content-area" class="bg-stone-50 p-5 rounded-lg border border-stone-200 min-h-[150px]">
+                        <div id="pill-job" class="pill-content active">
+                            <h4 class="text-xl font-semibold text-blue-700 mb-2">Job Name Mapping</h4>
+                            <p class="text-base text-stone-700">The OpenAPI <code>operationId</code> (e.g., <code>createUser</code>) or a combination of the <code>path</code> and <code>method</code> (e.g., <code>POST_/users</code>) can be used to create a unique, consistent <strong>OpenLineage Job name</strong>. This links the lineage event directly to a specific API operation.</p>
+                        </div>
+                        <div id="pill-schema" class="pill-content">
+                            <h4 class="text-xl font-semibold text-blue-700 mb-2">Data Schema Mapping</h4>
+                            <p class="text-base text-stone-700">The JSON Schemas defined in OpenAPI's <code>components/schemas</code> section (e.g., the <code>User</code> schema) can be directly used to populate the <strong>OpenLineage Dataset's <code>schema</code> facet</strong>. This provides field-level lineage for the data being passed through the API.</p>
+                        </div>
+                        <div id="pill-source" class="pill-content">
+                            <h4 class="text-xl font-semibold text-blue-700 mb-2">Source Location Mapping</h4>
+                            <p class="text-base text-stone-700">The URL or file path to the OpenAPI YAML file itself can be added to the <strong>OpenLineage Job's <code>sourceCodeLocation</code> facet</strong>. This creates a direct link from the lineage graph back to the API's formal definition.</p>
+                        </div>
+                        <div id="pill-desc" class="pill-content">
+                            <h4 class="text-xl font-semibold text-blue-700 mb-2">Description Mapping</h4>
+                            <p class="text-base text-stone-700">The <code>summary</code> and <code>description</code> fields from the OpenAPI operation can be used to populate the <strong>OpenLineage Job's <code>description</code> facet</strong>, providing human-readable context directly within the lineage tool.</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="use-cases" class="content-section bg-white p-6 rounded-lg shadow-md mt-8 scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-blue-800 mb-6">Use Case Scenarios</h2>
+                    <p class="text-lg text-stone-700 mb-6">
+                        Explore how this integration works in practice for different types of APIs.
+                    </p>
+
+                    <div class="border-b border-stone-300 mb-6">
+                        <nav class="flex flex-wrap space-x-2" id="use-case-tabs">
+                            <button class="tab-btn active py-3 px-5 font-medium text-lg rounded-t-lg" data-target="case1">1. CRUD API</button>
+                            <button class="tab-btn py-3 px-5 font-medium text-lg rounded-t-lg text-stone-600" data-target="case2">2. Ingestion API</button>
+                            <button class="tab-btn py-3 px-5 font-medium text-lg rounded-t-lg text-stone-600" data-target="case3">3. Reporting API</button>
+                        </nav>
+                    </div>
+
+                    <div id="use-case-content">
+                        <div id="case1" class="tab-content active">
+                            <h3 class="text-2xl font-semibold text-blue-700 mb-3">Scenario 1: Simple CRUD (Create User)</h3>
+                            <p class="text-base leading-relaxed text-stone-700 mb-4">
+                                An API endpoint <code>POST /users</code> receives a JSON payload and creates a new row in a <code>users</code> database table.
+                            </p>
+                            <h4 class="text-lg font-semibold text-stone-800 mb-3">Resulting OpenLineage Manifest:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700 mb-4">
+                                <li><strong>Job:</strong> <code>POST_/users</code> (from OpenAPI path)</li>
+                                <li><strong>Inputs:</strong> None (or a conceptual <code>http_request</code> dataset)</li>
+                                <li><strong>Outputs:</strong> <code>postgresql://db.host/users_db/users_table</code> (the table that was written to)</li>
+                                <li><strong>Facets:</strong> The <code>users_table</code> dataset facet includes the schema from OpenAPI's <code>User</code> component.</li>
+                            </ul>
+                            <div class="flow-diagram p-4 bg-stone-50 rounded-lg">
+                                <div class="flow-item">Job: POST /users</div>
+                                <div class="flow-arrow">&rarr;</div>
+                                <div class="flow-item bg-purple-100 border-purple-300 text-purple-800">Output: users_table</div>
+                            </div>
+                        </div>
+                        <div id="case2" class="tab-content">
+                            <h3 class="text-2xl font-semibold text-blue-700 mb-3">Scenario 2: Data Ingestion API</h3>
+                            <p class="text-base leading-relaxed text-stone-700 mb-4">
+                                An endpoint <code>POST /events</code> receives a tracking event and forwards it to a Kafka topic <code>raw_events</code>.
+                            </p>
+                            <h4 class="text-lg font-semibold text-stone-800 mb-3">Resulting OpenLineage Manifest:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700 mb-4">
+                                <li><strong>Job:</strong> <code>ingest_event</code> (from OpenAPI <code>operationId</code>)</li>
+                                <li><strong>Inputs:</strong> <code>http_request_payload</code> (a conceptual dataset with schema from OpenAPI)</li>
+                                <li><strong>Outputs:</strong> <code>kafka://broker/raw_events</code> (the Kafka topic)</li>
+                            </ul>
+                            <div class="flow-diagram p-4 bg-stone-50 rounded-lg">
+                                <div class="flow-item bg-green-100 border-green-300 text-green-800">Input: HTTP Request</div>
+                                <div class="flow-arrow">&rarr;</div>
+                                <div class="flow-item">Job: ingest_event</div>
+                                <div class="flow-arrow">&rarr;</div>
+                                <div class="flow-item bg-purple-100 border-purple-300 text-purple-800">Output: raw_events_topic</div>
+                            </div>
+                        </div>
+                        <div id="case3" class="tab-content">
+                            <h3 class="text-2xl font-semibold text-blue-700 mb-3">Scenario 3: Reporting API (Transformation)</h3>
+                            <p class="text-base leading-relaxed text-stone-700 mb-4">
+                                An endpoint <code>GET /reports/summary</code> reads from <code>orders</code> and <code>customers</code> tables, performs an aggregation, and returns a summary JSON.
+                            </p>
+                            <h4 class="text-lg font-semibold text-stone-800 mb-3">Resulting OpenLineage Manifest:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700 mb-4">
+                                <li><strong>Job:</strong> <code>get_report_summary</code> (from OpenAPI <code>operationId</code>)</li>
+                                <li><strong>Inputs:</strong> <code>.../orders_table</code>, <code>.../customers_table</code></li>
+                                <li><strong>Outputs:</strong> <code>http_response_summary</code> (a conceptual dataset representing the API response, with schema from OpenAPI)</li>
+                            </ul>
+                            <div class="flow-diagram p-4 bg-stone-50 rounded-lg flex-col sm:flex-row">
+                                <div class="flex flex-col gap-2">
+                                    <div class="flow-item bg-green-100 border-green-300 text-green-800">Input: orders_table</div>
+                                    <div class="flow-item bg-green-100 border-green-300 text-green-800">Input: customers_table</div>
+                                </div>
+                                <div class="flow-arrow rotate-90 sm:rotate-0">&rarr;</div>
+                                <div class="flow-item">Job: get_report_summary</div>
+                                <div class="flow-arrow rotate-90 sm:rotate-0">&rarr;</div>
+                                <div class="flow-item bg-purple-100 border-purple-300 text-purple-800">Output: HTTP Response</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="conclusion" class="content-section bg-white p-6 rounded-lg shadow-md mt-8 scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-blue-800 mb-6">Conclusion & Recommendations</h2>
+                    <p class="text-lg leading-relaxed text-stone-700 mb-4">
+                        OpenAPI and OpenLineage are powerful, non-competing standards that solve different problems.
+                    </p>
+                    <ul class="list-disc list-inside space-y-3 text-lg text-stone-700">
+                        <li>
+                            <strong class="font-semibold text-blue-700">Use OpenAPI</strong> for its intended purpose: defining, documenting, and testing your API contracts. It is the source of truth for your API's interface.
+                        </li>
+                        <li>
+                            <strong class="font-semibold text-amber-600">Use OpenLineage</strong> to track the flow of data *through* your APIs, treating them as individual jobs in your larger data ecosystem.
+                        </li>
+                        <li>
+                            <strong class="font-semibold text-stone-800">Integrate them</strong> by building or using adapters in your API gateways or microservices. These adapters should emit OpenLineage events on API calls, using the OpenAPI specification as a rich source of metadata (facets) to make the lineage graph more descriptive and useful.
+                        </li>
+                    </ul>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const initTabs = (tabContainerId, contentContainerId, defaultActiveTarget) => {
+                const tabContainer = document.getElementById(tabContainerId);
+                const contentContainer = document.getElementById(contentContainerId);
+                
+                if (!tabContainer || !contentContainer) return;
+
+                const tabs = tabContainer.querySelectorAll('.tab-btn');
+                const contents = contentContainer.querySelectorAll('.tab-content');
+
+                tabContainer.addEventListener('click', (e) => {
+                    const targetBtn = e.target.closest('.tab-btn');
+                    if (!targetBtn) return;
+
+                    tabs.forEach(tab => tab.classList.remove('active'));
+                    targetBtn.classList.add('active');
+
+                    const targetContentId = targetBtn.dataset.target;
+                    
+                    contents.forEach(content => {
+                        if (content.id === targetContentId) {
+                            content.classList.add('active');
+                        } else {
+                            content.classList.remove('active');
+                        }
+                    });
+                });
+                
+                if (defaultActiveTarget) {
+                    const defaultTab = tabContainer.querySelector(`[data-target="${defaultActiveTarget}"]`);
+                    const defaultContent = contentContainer.querySelector(`#${defaultActiveTarget}`);
+                    if (defaultTab && defaultContent) {
+                        tabs.forEach(tab => tab.classList.remove('active'));
+                        contents.forEach(content => content.classList.remove('active'));
+                        defaultTab.classList.add('active');
+                        defaultContent.classList.add('active');
+                    }
+                }
+            };
+            
+            const initPills = (pillContainerId, contentContainerId, defaultActiveTarget) => {
+                const pillContainer = document.getElementById(pillContainerId);
+                const contentContainer = document.getElementById(contentContainerId);
+                
+                if (!pillContainer || !contentContainer) return;
+
+                const pills = pillContainer.querySelectorAll('.pill-btn');
+                const contents = contentContainer.querySelectorAll('.pill-content');
+                
+                pillContainer.addEventListener('click', (e) => {
+                    const targetPill = e.target.closest('.pill-btn');
+                    if (!targetPill) return;
+
+                    pills.forEach(pill => pill.classList.remove('active'));
+                    targetPill.classList.add('active');
+
+                    const targetContentId = targetPill.dataset.target;
+                    
+                    contents.forEach(content => {
+                        if (content.id === targetContentId) {
+                            content.classList.add('active');
+                        } else {
+                            content.classList.remove('active');
+                        }
+                    });
+                });
+                
+                if (defaultActiveTarget) {
+                    const defaultPill = pillContainer.querySelector(`[data-target="${defaultActiveTarget}"]`);
+                    const defaultContent = contentContainer.querySelector(`#${defaultActiveTarget}`);
+                    if (defaultPill && defaultContent) {
+                        pills.forEach(pill => pill.classList.remove('active'));
+                        contents.forEach(content => content.classList.remove('active'));
+                        defaultPill.classList.add('active');
+                        defaultContent.classList.add('active');
+                    }
+                }
+            };
+
+            initTabs('concept-tabs', 'concept-content', 'openapi');
+            initTabs('use-case-tabs', 'use-case-content', 'case1');
+            initPills('pill-tabs', 'pill-content-area', 'pill-job');
+
+            const navLinks = document.querySelectorAll('.sticky-nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.4 
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+            
+            if (navLinks.length > 0) {
+                navLinks[0].classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>
