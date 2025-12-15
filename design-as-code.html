@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Architecture: Docs-as-Code Migration Kit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Chart Container Styles as per requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        
+        /* Custom Scrollbar for code blocks */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Animation utilities */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Interactive Element Styles */
+        .nav-item.active {
+            border-bottom: 2px solid #3b82f6;
+            color: #1e40af;
+            font-weight: 600;
+        }
+        .step-node.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .step-line.active {
+            background-color: #3b82f6;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals & Professional Blue -->
+    <!-- Application Structure Plan: Dashboard (Overview/Business Case) -> Roadmap (Process Flow) -> Templates (Interactive Gallery) -> Taxonomy (Organizational Structure) -> Comm Plan (Timeline). Chosen to guide the user from "Why" to "How" to "What". -->
+    <!-- Visualization & Content Choices: 
+         1. ROI Calculator (Inputs -> Metric): Demonstrates value.
+         2. Migration Phase Chart (Bar Chart): Shows effort distribution.
+         3. Interactive Roadmap (Process Flow): HTML/CSS clickable nodes for detail exploration.
+         4. Template Gallery (Tabs): Switches between Markdown source and rendered view to teach format. 
+         5. Granularity Tree (Nested List): Visualizes folder structures.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-slate-700 tracking-tight">EA<span class="text-blue-600">.Docs</span></span>
+                    <span class="ml-4 text-sm text-slate-500 hidden md:block">| Migration Toolkit & Standards</span>
+                </div>
+                <nav class="flex space-x-8">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item active px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Dashboard & Case</button>
+                    <button onclick="switchTab('roadmap')" id="nav-roadmap" class="nav-item px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Migration Roadmap</button>
+                    <button onclick="switchTab('templates')" id="nav-templates" class="nav-item px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Templates & Standards</button>
+                    <button onclick="switchTab('comms')" id="nav-comms" class="nav-item px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Comm Plan</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard-section" class="fade-in space-y-8">
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 md:p-8">
+                <h1 class="text-3xl font-bold text-slate-800 mb-4">The Case for Docs-as-Code</h1>
+                <p class="text-lg text-slate-600 leading-relaxed mb-6">
+                    Moving Enterprise Architecture documentation from static wikis (Confluence) to version-controlled Markdown (Docs-as-Code) bridges the gap between implementation and design. 
+                    This dashboard allows you to calculate the ROI of this migration and visualize the efficiency gains in maintenance and accuracy.
+                </p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                    <!-- ROI Calculator -->
+                    <div class="bg-stone-50 rounded-lg p-6 border border-stone-200">
+                        <h2 class="text-xl font-semibold text-slate-700 mb-4">Efficiency Impact Calculator</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Architects on Team: <span id="val-architects" class="font-bold text-blue-600">10</span></label>
+                                <input type="range" min="1" max="50" value="10" id="inp-architects" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Hours/Week searching Confluence: <span id="val-search" class="font-bold text-blue-600">4</span></label>
+                                <input type="range" min="0" max="20" value="4" id="inp-search" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Drift Reduction (Accuracy Gain): <span id="val-drift" class="font-bold text-blue-600">40%</span></label>
+                                <input type="range" min="0" max="100" value="40" id="inp-drift" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                            </div>
+                            
+                            <div class="mt-6 pt-6 border-t border-stone-200">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="text-center p-3 bg-white rounded shadow-sm">
+                                        <div class="text-sm text-slate-500">Hours Saved / Year</div>
+                                        <div class="text-2xl font-bold text-emerald-600" id="res-hours">2,080</div>
+                                    </div>
+                                    <div class="text-center p-3 bg-white rounded shadow-sm">
+                                        <div class="text-sm text-slate-500">Productivity Value</div>
+                                        <div class="text-2xl font-bold text-emerald-600" id="res-value">$208k</div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2 text-center">*Assuming $100/hr blended cost.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Chart -->
+                    <div class="flex flex-col h-full">
+                        <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2 text-center">Documentation Lifecycle Effort</h3>
+                        <div class="bg-white rounded-lg border border-stone-200 p-4 flex-grow flex items-center justify-center">
+                            <div class="chart-container">
+                                <canvas id="comparisonChart"></canvas>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-500 mt-3 text-center italic">
+                            Docs-as-code shifts effort from "Searching & Formatting" to "Reviewing & Curating".
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Principles -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mb-4">1</div>
+                    <h3 class="font-bold text-slate-800 mb-2">Single Source of Truth</h3>
+                    <p class="text-slate-600 text-sm">Documentation lives alongside code. No more syncing separate Confluence pages with repo reality.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold mb-4">2</div>
+                    <h3 class="font-bold text-slate-800 mb-2">Peer Review Gate</h3>
+                    <p class="text-slate-600 text-sm">Use Pull Requests (PRs) for architectural changes. History is preserved in Git commit logs, not page history.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold mb-4">3</div>
+                    <h3 class="font-bold text-slate-800 mb-2">Automated Publishing</h3>
+                    <p class="text-slate-600 text-sm">CI/CD pipelines build the static site (e.g., MkDocs, Hugo) automatically on merge. Dead links break the build.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROADMAP SECTION -->
+        <section id="roadmap-section" class="hidden fade-in space-y-6">
+            <div class="bg-white rounded-xl p-8 border border-stone-200">
+                <h2 class="text-2xl font-bold text-slate-800 mb-4">Migration Execution Plan</h2>
+                <p class="text-slate-600 mb-8">
+                    A big-bang migration fails. We recommend a phased approach, starting with high-value technical domains. 
+                    Click on a phase below to see specific tasks and deliverables.
+                </p>
+
+                <!-- Interactive Timeline -->
+                <div class="relative mb-12">
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -translate-y-1/2 z-0"></div>
+                    <div class="relative z-10 flex justify-between items-center px-4">
+                        <button onclick="updateRoadmap(0)" class="step-node active w-10 h-10 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center hover:scale-110 transition-transform focus:outline-none">1</button>
+                        <button onclick="updateRoadmap(1)" class="step-node w-10 h-10 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center hover:scale-110 transition-transform focus:outline-none">2</button>
+                        <button onclick="updateRoadmap(2)" class="step-node w-10 h-10 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center hover:scale-110 transition-transform focus:outline-none">3</button>
+                        <button onclick="updateRoadmap(3)" class="step-node w-10 h-10 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center hover:scale-110 transition-transform focus:outline-none">4</button>
+                    </div>
+                    <div class="relative z-10 flex justify-between items-center px-2 mt-2 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                        <span class="text-center w-24">Pilot & Setup</span>
+                        <span class="text-center w-24">Define Taxonomy</span>
+                        <span class="text-center w-24">Migration</span>
+                        <span class="text-center w-24">Optimize</span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Content for Roadmap -->
+                <div id="roadmap-details" class="bg-slate-50 rounded-lg p-6 border border-slate-200">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+
+            <!-- Granularity Strategy -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl p-6 border border-stone-200">
+                    <h3 class="font-bold text-slate-800 mb-4">Granularity & Taxonomy Strategy</h3>
+                    <p class="text-sm text-slate-600 mb-4">How to organize files to prevent "Digital Junkyard" syndrome.</p>
+                    <div class="space-y-2 font-mono text-sm">
+                        <div class="flex items-center text-slate-700">
+                            <span class="mr-2">📂</span> <strong>/architecture</strong>
+                        </div>
+                        <div class="pl-6 flex items-center text-slate-700">
+                            <span class="mr-2">📂</span> <strong>/decisions</strong> <span class="ml-2 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded">ADRs go here</span>
+                        </div>
+                        <div class="pl-6 flex items-center text-slate-700">
+                            <span class="mr-2">📂</span> <strong>/standards</strong>
+                        </div>
+                        <div class="pl-12 flex items-center text-slate-500">
+                            <span class="mr-2">📄</span> tech-radar.md
+                        </div>
+                        <div class="pl-12 flex items-center text-slate-500">
+                            <span class="mr-2">📄</span> api-guidelines.md
+                        </div>
+                        <div class="pl-6 flex items-center text-slate-700">
+                            <span class="mr-2">📂</span> <strong>/systems</strong>
+                        </div>
+                        <div class="pl-12 flex items-center text-slate-700">
+                            <span class="mr-2">📂</span> <strong>/payment-service</strong>
+                        </div>
+                        <div class="pl-16 flex items-center text-slate-500">
+                            <span class="mr-2">📄</span> context.md <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">C4 Level 1</span>
+                        </div>
+                        <div class="pl-16 flex items-center text-slate-500">
+                            <span class="mr-2">📄</span> runbook.md
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 border border-stone-200">
+                     <h3 class="font-bold text-slate-800 mb-4">Toolchain Recommendation</h3>
+                     <ul class="space-y-3">
+                         <li class="flex items-start">
+                             <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-3 text-xs">✓</div>
+                             <div>
+                                 <span class="font-semibold text-sm">Repository:</span>
+                                 <span class="text-sm text-slate-600">Git (Monorepo for docs or co-located with service code).</span>
+                             </div>
+                         </li>
+                         <li class="flex items-start">
+                             <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-3 text-xs">✓</div>
+                             <div>
+                                 <span class="font-semibold text-sm">Format:</span>
+                                 <span class="text-sm text-slate-600">CommonMark Markdown.</span>
+                             </div>
+                         </li>
+                         <li class="flex items-start">
+                             <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-3 text-xs">✓</div>
+                             <div>
+                                 <span class="font-semibold text-sm">Diagrams:</span>
+                                 <span class="text-sm text-slate-600">Mermaid.js or PlantUML (Code-based generation).</span>
+                             </div>
+                         </li>
+                         <li class="flex items-start">
+                             <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-3 text-xs">✓</div>
+                             <div>
+                                 <span class="font-semibold text-sm">Generator:</span>
+                                 <span class="text-sm text-slate-600">MkDocs (Material Theme) or Hugo.</span>
+                             </div>
+                         </li>
+                     </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TEMPLATES SECTION -->
+        <section id="templates-section" class="hidden fade-in space-y-6">
+            <div class="bg-white rounded-xl p-6 md:p-8 border border-stone-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Standardized Templates</h2>
+                        <p class="text-slate-600 text-sm mt-1">Select a document type to view the standard structure and usage guidelines.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0">
+                        <select id="template-selector" onchange="updateTemplate()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <option value="adr">Architecture Decision Record (ADR)</option>
+                            <option value="rfc">Request for Comment (RFC)</option>
+                            <option value="system">System Context (C4)</option>
+                            <option value="review">Architecture Review Checklist</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[600px]">
+                    <!-- Editor/Source View -->
+                    <div class="flex flex-col h-full bg-slate-900 rounded-lg overflow-hidden shadow-inner">
+                        <div class="bg-slate-800 px-4 py-2 flex justify-between items-center border-b border-slate-700">
+                            <span class="text-xs text-slate-400 font-mono">Source: Markdown</span>
+                            <button class="text-xs text-blue-400 hover:text-blue-300" onclick="copyToClipboard()">Copy to Clipboard</button>
+                        </div>
+                        <div class="p-4 overflow-y-auto custom-scroll flex-grow font-mono text-xs md:text-sm text-slate-300 whitespace-pre-wrap" id="markdown-source">
+                            <!-- Content Injected -->
+                        </div>
+                    </div>
+
+                    <!-- Rendered Preview -->
+                    <div class="flex flex-col h-full bg-white rounded-lg border border-stone-200 overflow-hidden shadow-sm">
+                        <div class="bg-slate-50 px-4 py-2 border-b border-stone-200">
+                            <span class="text-xs text-slate-500 uppercase tracking-wider font-bold">Preview</span>
+                        </div>
+                        <div class="p-6 overflow-y-auto custom-scroll flex-grow prose prose-sm max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-li:text-slate-600" id="rendered-preview">
+                            <!-- Content Injected -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COMMUNICATION PLAN SECTION -->
+        <section id="comms-section" class="hidden fade-in space-y-6">
+            <div class="bg-white rounded-xl p-8 border border-stone-200">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6">Change Management & Communications</h2>
+                <p class="text-slate-600 mb-8">
+                    Moving to Docs-as-Code is a cultural shift. It requires treating documentation as a product.
+                </p>
+
+                <div class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+                    
+                    <!-- Comm Item 1 -->
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-300 group-[.is-active]:bg-blue-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                            <span class="font-bold text-xs">Wk 1</span>
+                        </div>
+                        <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded border border-stone-200 shadow-sm">
+                            <div class="flex items-center justify-between space-x-2 mb-1">
+                                <div class="font-bold text-slate-900">Announcement & "The Why"</div>
+                                <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Town Hall</span>
+                            </div>
+                            <div class="text-slate-600 text-sm">
+                                Focus on pain points: "We know search sucks." Introduce the vision of docs living with code. Demo the "Edit on GitHub" button.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comm Item 2 -->
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-300 group-[.is-active]:bg-blue-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                            <span class="font-bold text-xs">Wk 4</span>
+                        </div>
+                        <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded border border-stone-200 shadow-sm">
+                            <div class="flex items-center justify-between space-x-2 mb-1">
+                                <div class="font-bold text-slate-900">Training: Git for Architects</div>
+                                <span class="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded">Workshop</span>
+                            </div>
+                            <div class="text-slate-600 text-sm">
+                                Hands-on session: Cloning the repo, creating a branch, writing an ADR in Markdown, and submitting a PR.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comm Item 3 -->
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-300 group-[.is-active]:bg-blue-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                            <span class="font-bold text-xs">Wk 8</span>
+                        </div>
+                        <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded border border-stone-200 shadow-sm">
+                            <div class="flex items-center justify-between space-x-2 mb-1">
+                                <div class="font-bold text-slate-900">The "Freeze"</div>
+                                <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">Email/Slack</span>
+                            </div>
+                            <div class="text-slate-600 text-sm">
+                                Announce that legacy Confluence spaces will become Read-Only on [Date]. Provide link to the migration request form.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-stone-200 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-400 text-sm">
+            <p>&copy; 2025 Enterprise Architecture Team. Generated for Internal Planning.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- DATA ---
+        
+        // Roadmap Data
+        const roadmapSteps = [
+            {
+                title: "Phase 1: Pilot & Infrastructure",
+                duration: "Weeks 1-4",
+                goal: "Prove capability with low risk.",
+                tasks: [
+                    "Set up Git repository structure (Monorepo vs. Distributed)",
+                    "Configure CI/CD Pipeline (e.g., GitHub Actions -> MkDocs Build -> Static Host)",
+                    "Select one high-maturity domain (e.g., Payments) for pilot",
+                    "Migrate 5 key ADRs and 1 System Context diagram manually"
+                ],
+                deliverables: "Working internal URL, 1st successful Pull Request merge."
+            },
+            {
+                title: "Phase 2: Taxonomy & Standards",
+                duration: "Weeks 5-8",
+                goal: "Prevent chaos before scaling.",
+                tasks: [
+                    "Finalize ADR Template (Status: Proposed, Accepted, Deprecated)",
+                    "Define folder structure constraints (linting rules)",
+                    "Create 'Linter' for Markdown (check for broken links, missing headers)",
+                    "Conduct 'Git for Architects' workshops"
+                ],
+                deliverables: "Contribution Guidelines.md, Linter config file."
+            },
+            {
+                title: "Phase 3: Bulk Migration",
+                duration: "Weeks 9-16",
+                goal: "Move content, leaving trash behind.",
+                tasks: [
+                    "Audit Confluence: Tag pages as 'Migrate', 'Archive', or 'Delete'",
+                    "Use Pandoc scripts to convert 'Migrate' pages to Markdown",
+                    "Manual cleanup of tables and images",
+                    "Set Confluence spaces to Read-Only with link to new docs"
+                ],
+                deliverables: "80% of active documentation live in code."
+            },
+            {
+                title: "Phase 4: Governance & Optimization",
+                duration: "Ongoing",
+                goal: "Sustain quality.",
+                tasks: [
+                    "Implement 'CODEOWNERS' file to auto-assign PR reviewers by domain",
+                    "Add 'Last Updated' badges to pages",
+                    "Quarterly stale-doc cleanup drives"
+                ],
+                deliverables: "Automated governance reports."
+            }
+        ];
+
+        // Templates Data
+        const templates = {
+            adr: {
+                title: "Architecture Decision Record (ADR)",
+                markdown: `# ADR-001: [Short Title of Decision]
+
+**Status:** [Proposed | Accepted | Deprecated | Superseded]
+**Date:** YYYY-MM-DD
+**Author:** [Name]
+
+## Context
+[Describe the problem. What forces are at play? What constraints do we have? Link to ticket/RFC.]
+
+## Decision
+[We will do X. We will use technology Y. State the decision clearly and actively.]
+
+## Consequences
+**Positive:**
+* [Benefit 1]
+* [Benefit 2]
+
+**Negative:**
+* [Drawback 1]
+* [Risk 2]
+
+## Alternatives Considered
+* **Option A:** [Why we didn't choose it]
+* **Option B:** [Why we didn't choose it]`,
+                html: `<h1 class="text-2xl font-bold mb-4">ADR-001: [Short Title of Decision]</h1>
+<p class="mb-4"><strong>Status:</strong> <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">Accepted</span><br>
+<strong>Date:</strong> 2025-10-12<br>
+<strong>Author:</strong> Jane Doe</p>
+
+<h2 class="text-xl font-bold mt-6 mb-2">Context</h2>
+<p class="mb-4">The current monolithic architecture prevents independent scaling of the checkout service. High traffic during sales events causes cascading failures.</p>
+
+<h2 class="text-xl font-bold mt-6 mb-2">Decision</h2>
+<p class="mb-4">We will extract the Checkout module into a standalone microservice using Go and gRPC.</p>
+
+<h2 class="text-xl font-bold mt-6 mb-2">Consequences</h2>
+<p class="mb-2"><strong>Positive:</strong></p>
+<ul class="list-disc pl-5 mb-4">
+<li>Independent scaling of checkout.</li>
+<li>Fault isolation.</li>
+</ul>
+<p class="mb-2"><strong>Negative:</strong></p>
+<ul class="list-disc pl-5 mb-4">
+<li>Increased operational complexity.</li>
+<li>Need for distributed tracing.</li>
+</ul>`
+            },
+            rfc: {
+                title: "Request for Comments (RFC)",
+                markdown: `# RFC: [Title]
+
+**Target Date:** YYYY-MM-DD
+**Sponsor:** [Executive/Lead]
+
+## Summary
+[One paragraph executive summary.]
+
+## Motivation
+[Why are we doing this? usage data, market demand, tech debt?]
+
+## Detailed Design
+[The core of the document. Diagrams, API specs, database schemas.]
+
+## Drawbacks
+[Why should we *not* do this?]
+
+## Unresolved Questions
+* [Question 1]`,
+                html: `<h1 class="text-2xl font-bold mb-4">RFC: Async Messaging for Notifications</h1>
+<p class="mb-4"><strong>Target Date:</strong> 2025-12-01<br>
+<strong>Sponsor:</strong> CTO Office</p>
+
+<h2 class="text-xl font-bold mt-6 mb-2">Summary</h2>
+<p class="mb-4">Proposing a shift from synchronous HTTP calls to an event-driven architecture using Kafka for all user notifications.</p>
+
+<h2 class="text-xl font-bold mt-6 mb-2">Motivation</h2>
+<p class="mb-4">Current synchronous calls add 200ms latency to the user signup flow. Retry logic is scattered across services.</p>`
+            },
+            system: {
+                title: "System Context (C4 Level 1)",
+                markdown: `# System: [System Name]
+
+## Description
+[High level description of what the system does.]
+
+## Domain
+[E.g. Payments, Logistics, Identity]
+
+## Architecture
+**Repository:** [Link]
+**Tech Stack:** [Java, Spring Boot, Postgres]
+
+## Diagrams
+![Context Diagram](./images/context.png)
+*(Note: In Docs-as-Code, use Mermaid JS or PlantUML code blocks here instead of images for easier updates)*
+
+## External Dependencies
+| System | Interaction | Criticality |
+|--------|-------------|-------------|
+| IDP    | Auth        | High        |
+| CRM    | Sync User   | Low         |`,
+                html: `<h1 class="text-2xl font-bold mb-4">System: Payment Gateway</h1>
+<h2 class="text-xl font-bold mt-6 mb-2">Description</h2>
+<p class="mb-4">Handles credit card processing and fraud detection integration.</p>
+
+<h2 class="text-xl font-bold mt-6 mb-2">Architecture</h2>
+<p class="mb-4"><strong>Tech Stack:</strong> Java, Spring Boot, Postgres</p>
+
+<h2 class="text-xl font-bold mt-6 mb-2">External Dependencies</h2>
+<table class="w-full text-sm text-left border border-slate-200">
+<thead class="bg-slate-50"><tr><th class="p-2 border">System</th><th class="p-2 border">Interaction</th></tr></thead>
+<tbody>
+<tr><td class="p-2 border">Stripe API</td><td class="p-2 border">Processing</td></tr>
+<tr><td class="p-2 border">FraudSvc</td><td class="p-2 border">Risk Check</td></tr>
+</tbody>
+</table>`
+            },
+            review: {
+                title: "Architecture Review Checklist",
+                markdown: `# Arch Review: [Project Name]
+
+## Non-Functional Requirements
+- [ ] **Scalability:** Handles 2x peak load?
+- [ ] **Security:** PII handling reviewed?
+- [ ] **Observability:** Metrics defined (RED method)?
+
+## Operational Readiness
+- [ ] Runbooks created?
+- [ ] On-call rotation defined?
+- [ ] Disaster Recovery plan tested?`,
+                html: `<h1 class="text-2xl font-bold mb-4">Arch Review: New Search Index</h1>
+<h2 class="text-xl font-bold mt-6 mb-2">Non-Functional Requirements</h2>
+<ul class="list-none space-y-2">
+<li><input type="checkbox" checked disabled> <strong>Scalability:</strong> Handles 2x peak load?</li>
+<li><input type="checkbox" disabled> <strong>Security:</strong> PII handling reviewed?</li>
+</ul>`
+            }
+        };
+
+        // --- CHART JS SETUP ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Search/Find', 'Reviewing', 'Formatting/Styling', 'Writing Content', 'Verify Outdated'],
+                    datasets: [{
+                        label: 'Confluence (Legacy)',
+                        data: [35, 10, 25, 20, 10],
+                        backgroundColor: '#94a3b8'
+                    }, {
+                        label: 'Docs-as-Code (New)',
+                        data: [5, 40, 5, 45, 5],
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: '% of Time Spent' },
+                            max: 60
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Init default views
+            updateRoadmap(0);
+            updateTemplate();
+            calculateROI();
+        });
+
+        // --- INTERACTIVITY FUNCTIONS ---
+
+        function switchTab(tabId) {
+            // Hide all sections
+            document.querySelectorAll('section').forEach(el => {
+                el.classList.add('hidden');
+            });
+            // Remove active class from nav
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected
+            document.getElementById(tabId + '-section').classList.remove('hidden');
+            document.getElementById('nav-' + tabId).classList.add('active');
+        }
+
+        function updateRoadmap(stepIndex) {
+            // Visual updates for nodes
+            document.querySelectorAll('.step-node').forEach((node, idx) => {
+                if (idx === stepIndex) {
+                    node.classList.add('active', 'scale-110', 'bg-blue-600', 'text-white', 'border-blue-600');
+                    node.classList.remove('bg-white', 'text-slate-800', 'border-slate-300');
+                } else {
+                    node.classList.remove('active', 'scale-110', 'bg-blue-600', 'text-white', 'border-blue-600');
+                    node.classList.add('bg-white', 'text-slate-800', 'border-slate-300');
+                }
+            });
+
+            // Content Update
+            const data = roadmapSteps[stepIndex];
+            const contentDiv = document.getElementById('roadmap-details');
+            
+            let tasksHtml = data.tasks.map(t => `<li class="flex items-start"><span class="mr-2 text-blue-500">→</span>${t}</li>`).join('');
+
+            contentDiv.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-in">
+                    <div class="md:col-span-2">
+                        <h3 class="text-xl font-bold text-blue-800 mb-2">${data.title}</h3>
+                        <p class="text-slate-600 italic mb-4">${data.goal}</p>
+                        <h4 class="font-bold text-sm uppercase text-slate-500 mb-2">Key Tasks</h4>
+                        <ul class="space-y-2 text-slate-700 text-sm">
+                            ${tasksHtml}
+                        </ul>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded border border-blue-100 h-fit">
+                        <div class="mb-3">
+                            <span class="text-xs font-bold text-blue-400 uppercase">Duration</span>
+                            <div class="font-semibold text-slate-800">${data.duration}</div>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-blue-400 uppercase">Deliverable</span>
+                            <div class="font-semibold text-slate-800 text-sm">${data.deliverables}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateTemplate() {
+            const selector = document.getElementById('template-selector');
+            const key = selector.value;
+            const data = templates[key];
+
+            document.getElementById('markdown-source').innerText = data.markdown;
+            document.getElementById('rendered-preview').innerHTML = data.html;
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('markdown-source').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Markdown template copied to clipboard!');
+            });
+        }
+
+        // ROI Calculator Logic
+        const inputs = ['inp-architects', 'inp-search', 'inp-drift'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateROI);
+        });
+
+        function calculateROI() {
+            const architects = parseInt(document.getElementById('inp-architects').value);
+            const searchHours = parseInt(document.getElementById('inp-search').value);
+            const driftPercent = parseInt(document.getElementById('inp-drift').value);
+
+            // Update labels
+            document.getElementById('val-architects').innerText = architects;
+            document.getElementById('val-search').innerText = searchHours;
+            document.getElementById('val-drift').innerText = driftPercent + '%';
+
+            // Calculation: 
+            // Savings = (Search Hours * 52 weeks * Architects)
+            // Value = Savings * $100
+            
+            const hoursSaved = searchHours * 52 * architects;
+            const valueSaved = hoursSaved * 100;
+
+            document.getElementById('res-hours').innerText = hoursSaved.toLocaleString();
+            document.getElementById('res-value').innerText = '$' + (valueSaved / 1000).toFixed(0) + 'k';
+        }
+
+    </script>
+</body>
+</html>
